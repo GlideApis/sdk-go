@@ -8,8 +8,8 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/ClearBlockchain/sdk-go/pkg/glide"
-	"github.com/ClearBlockchain/sdk-go/pkg/types"
+	"github.com/GlideApis/sdk-go/pkg/glide"
+	"github.com/GlideApis/sdk-go/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,7 +19,7 @@ func TestNumberVerify(t *testing.T) {
 	assert.NoError(t, err)
 	t.Run("should work", func(t *testing.T) {
 		phoneNumber := "+555123456789"
-	    authUrl, err := glideClient.NumberVerify.GetAuthURL(types.NumberVerifyAuthUrlInput{UseDevNumber: phoneNumber})
+		authUrl, err := glideClient.NumberVerify.GetAuthURL(types.NumberVerifyAuthUrlInput{UseDevNumber: phoneNumber})
 		fmt.Println("Open this URL on the user's device: ", authUrl)
 		assert.NoError(t, err)
 		assert.NotNil(t, authUrl)
@@ -37,7 +37,7 @@ func TestNumberVerify(t *testing.T) {
 		location := res.Headers.Get("Location")
 		parsedLocation, err := url.Parse(location)
 		assert.NoError(t, err)
-        code := parsedLocation.Query().Get("code")
+		code := parsedLocation.Query().Get("code")
 		t.Logf("res: %s", res)
 		t.Logf("Code: %s", code)
 		assert.NoError(t, err)
@@ -52,7 +52,7 @@ func TestNumberVerify(t *testing.T) {
 
 	t.Run("should work with print code", func(t *testing.T) {
 		phoneNumber := "+555123456789"
-	    authUrl, err := glideClient.NumberVerify.GetAuthURL(types.NumberVerifyAuthUrlInput{UseDevNumber: phoneNumber, PrintCode: true})
+		authUrl, err := glideClient.NumberVerify.GetAuthURL(types.NumberVerifyAuthUrlInput{UseDevNumber: phoneNumber, PrintCode: true})
 		assert.NoError(t, err)
 		assert.NotNil(t, authUrl)
 		assert.NotEmpty(t, authUrl)
@@ -83,6 +83,6 @@ func TestNumberVerify(t *testing.T) {
 		verify, err := client.VerifyNumber(nil, types.ApiConfig{SessionIdentifier: "session77"})
 		assert.NoError(t, err)
 		t.Logf("Check verify: %+v", verify)
-		assert.Equal(t, true, verify.DevicePhoneNumberVerified, "Response should have devicePhoneNumberVerified=true")	
+		assert.Equal(t, true, verify.DevicePhoneNumberVerified, "Response should have devicePhoneNumberVerified=true")
 	})
 }

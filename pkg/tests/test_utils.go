@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ClearBlockchain/sdk-go/pkg/types"
+	"github.com/GlideApis/sdk-go/pkg/types"
 	"github.com/joho/godotenv"
 )
 

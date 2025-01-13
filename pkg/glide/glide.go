@@ -5,27 +5,27 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ClearBlockchain/sdk-go/pkg/services"
-	"github.com/ClearBlockchain/sdk-go/pkg/types"
-	"github.com/ClearBlockchain/sdk-go/pkg/utils"
+	"github.com/GlideApis/sdk-go/pkg/services"
+	"github.com/GlideApis/sdk-go/pkg/types"
+	"github.com/GlideApis/sdk-go/pkg/utils"
 )
 
 // GlideClient is the main client for the SDK
 type GlideClient struct {
-	settings    types.GlideSdkSettings
-	TelcoFinder *services.TelcoFinderClient
-	MagicAuth   *services.MagicAuthClient
-	SimSwap     *services.SimSwapClient
+	settings     types.GlideSdkSettings
+	TelcoFinder  *services.TelcoFinderClient
+	MagicAuth    *services.MagicAuthClient
+	SimSwap      *services.SimSwapClient
 	NumberVerify *services.NumberVerifyClient
 }
 
-func ReportMetric(report types.MetricInfo) error{
+func ReportMetric(report types.MetricInfo) error {
 	if os.Getenv("REPORT_METRIC_URL") == "" {
 		return fmt.Errorf("missing process env REPORT_METRIC_URL")
 	}
 	if report.ClientId == "" {
-        report.ClientId = os.Getenv("GLIDE_CLIENT_ID")
-    }
+		report.ClientId = os.Getenv("GLIDE_CLIENT_ID")
+	}
 	if report.ClientId == "" {
 		return fmt.Errorf("missing ClientId")
 	}
@@ -41,7 +41,7 @@ func ReportMetric(report types.MetricInfo) error{
 	if report.Timestamp.IsZero() {
 		return fmt.Errorf("missing Timestamp")
 	}
-    utils.ReportMetric(report)
+	utils.ReportMetric(report)
 	return nil
 }
 
@@ -68,10 +68,10 @@ func NewGlideClient(settings types.GlideSdkSettings) (*GlideClient, error) {
 	}
 
 	client := &GlideClient{
-		settings:    mergedSettings,
-		TelcoFinder: services.NewTelcoFinderClient(mergedSettings),
-		MagicAuth:   services.NewMagicAuthClient(mergedSettings),
-		SimSwap:     services.NewSimSwapClient(mergedSettings),
+		settings:     mergedSettings,
+		TelcoFinder:  services.NewTelcoFinderClient(mergedSettings),
+		MagicAuth:    services.NewMagicAuthClient(mergedSettings),
+		SimSwap:      services.NewSimSwapClient(mergedSettings),
 		NumberVerify: services.NewNumberVerifyClient(mergedSettings),
 	}
 

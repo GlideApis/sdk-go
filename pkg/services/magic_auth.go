@@ -4,19 +4,19 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/GlideApis/sdk-go/pkg/types"
+	"github.com/GlideApis/sdk-go/pkg/utils"
 	"net/url"
 	"strings"
 	"sync"
 	"time"
-	"github.com/ClearBlockchain/sdk-go/pkg/types"
-	"github.com/ClearBlockchain/sdk-go/pkg/utils"
 )
 
 type MagicAuthStartResponse struct {
-	Type    string `json:"type"`
-	AuthURL string `json:"authUrl,omitempty"`
+	Type        string `json:"type"`
+	AuthURL     string `json:"authUrl,omitempty"`
 	FlatAuthURL string `json:"flatAuthUrl,omitempty"`
-	OperatorId string `json:"operatorId,omitempty"`
+	OperatorId  string `json:"operatorId,omitempty"`
 }
 
 type MagicAuthCheckResponse struct {
@@ -86,7 +86,7 @@ func (c *MagicAuthClient) StartAuth(props types.MagicAuthStartProps, conf types.
 		return nil, fmt.Errorf("[GlideClient] Failed to parse response: %w", err)
 	}
 
-	if conf.SessionIdentifier != "" && result.OperatorId!="" {
+	if conf.SessionIdentifier != "" && result.OperatorId != "" {
 		c.reportMagicAuthMetric(&wg, conf.SessionIdentifier, "Glide verificationStartRes", result.OperatorId)
 	}
 	wg.Wait()
@@ -149,7 +149,7 @@ func (c *MagicAuthClient) VerifyAuth(props types.MagicAuthVerifyProps, conf type
 			c.reportMagicAuthMetric(&wg, conf.SessionIdentifier, "Glide verified", "")
 		} else if !result.Verified {
 			c.reportMagicAuthMetric(&wg, conf.SessionIdentifier, "Glide unverified", "")
-	  }
+		}
 	}
 	wg.Wait()
 	return &result, nil
@@ -196,7 +196,7 @@ func (c *MagicAuthClient) generateNewSession() (*types.Session, error) {
 		return nil, fmt.Errorf("failed to generate new session: %w", err)
 	}
 
-    var body struct {
+	var body struct {
 		AccessToken string `json:"access_token"`
 		ExpiresIn   int64  `json:"expires_in"`
 		Scope       string `json:"scope"`

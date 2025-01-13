@@ -1,11 +1,11 @@
 package tests
 
 import (
+	"github.com/GlideApis/sdk-go/pkg/glide"
+	"github.com/GlideApis/sdk-go/pkg/types"
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"
-	"github.com/ClearBlockchain/sdk-go/pkg/glide"
-	"github.com/ClearBlockchain/sdk-go/pkg/types"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestMagicAuth(t *testing.T) {

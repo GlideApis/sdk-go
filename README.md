@@ -11,7 +11,7 @@ Number Verification: Verify phone numbers and retrieve operator information.
 To install the Glide Go SDK, use the go get command:
 
 ```bash
-go get github.com/ClearBlockchain/sdk-go
+go get github.com/GlideApis/sdk-go
 ```
 ## Getting Started
 
@@ -42,8 +42,8 @@ import (
     "log"
     "os"
     "github.com/joho/godotenv"
-    "github.com/ClearBlockchain/sdk-go/pkg/glide"
-    "github.com/ClearBlockchain/sdk-go/pkg/types"
+    "github.com/GlideApis/sdk-go/pkg/glide"
+    "github.com/GlideApis/sdk-go/pkg/types"
 )
 
 func main() {

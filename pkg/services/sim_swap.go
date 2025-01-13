@@ -1,33 +1,31 @@
 package services
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/ClearBlockchain/sdk-go/pkg/types"
-	"github.com/ClearBlockchain/sdk-go/pkg/utils"
-	"encoding/base64"
-    "net/url"
-    "strings"
-    "time"
+	"github.com/GlideApis/sdk-go/pkg/types"
+	"github.com/GlideApis/sdk-go/pkg/utils"
+	"net/url"
+	"strings"
+	"time"
 )
-
 
 type SimSwapCheckResponse struct {
 	Swapped bool `json:"swapped"`
 }
-
 
 type SimSwapRetrieveDateResponse struct {
 	LatestSimChange string `json:"latestSimChange"`
 }
 
 type SimSwapUserClient struct {
-	settings         types.GlideSdkSettings
-	identifier       types.UserIdentifier
-	session          *types.Session
-	RequiresConsent  bool
-	consentURL       string
-	authReqID        string
+	settings        types.GlideSdkSettings
+	identifier      types.UserIdentifier
+	session         *types.Session
+	RequiresConsent bool
+	consentURL      string
+	authReqID       string
 }
 
 func NewSimSwapUserClient(settings types.GlideSdkSettings, identifier types.UserIdentifier) *SimSwapUserClient {
@@ -88,7 +86,6 @@ func (c *SimSwapUserClient) Check(params types.SimSwapCheckParams, conf types.Ap
 	}
 	return &result, nil
 }
-
 
 // RetrieveDate retrieves the date of the latest SIM swap
 func (c *SimSwapUserClient) RetrieveDate(params types.SimSwapRetrieveDateParams, conf types.ApiConfig) (*SimSwapRetrieveDateResponse, error) {
@@ -186,26 +183,25 @@ func (c *SimSwapUserClient) StartSession() error {
 	return nil
 }
 
-
 func (c *SimSwapUserClient) getSession(confSession *types.Session) (*types.Session, error) {
-    if confSession != nil {
-        fmt.Println("Debug: Using provided session")
-        return confSession, nil
-    }
+	if confSession != nil {
+		fmt.Println("Debug: Using provided session")
+		return confSession, nil
+	}
 
-    if c.session != nil && c.session.ExpiresAt > time.Now().Add(time.Minute).Unix() && contains(c.session.Scopes, "sim-swap") {
-        fmt.Println("Debug: Using cached session")
-        return c.session, nil
-    }
+	if c.session != nil && c.session.ExpiresAt > time.Now().Add(time.Minute).Unix() && contains(c.session.Scopes, "sim-swap") {
+		fmt.Println("Debug: Using cached session")
+		return c.session, nil
+	}
 
-    fmt.Println("Debug: Generating new session")
-    session, err := c.generateNewSession()
-    if err != nil {
-        return nil, fmt.Errorf("failed to generate new session: %w", err)
-    }
-    c.authReqID = ""
-    c.session = session
-    return session, nil
+	fmt.Println("Debug: Generating new session")
+	session, err := c.generateNewSession()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate new session: %w", err)
+	}
+	c.authReqID = ""
+	c.session = session
+	return session, nil
 }
 
 // PollAndWaitForSession continuously polls for a valid session
@@ -255,7 +251,7 @@ func (c *SimSwapUserClient) generateNewSession() (*types.Session, error) {
 
 	var body struct {
 		AccessToken string `json:"access_token"`
-		ExpiresIn   int64    `json:"expires_in"`
+		ExpiresIn   int64  `json:"expires_in"`
 		Scope       string `json:"scope"`
 	}
 	if err := resp.JSON(&body); err != nil {
@@ -266,7 +262,7 @@ func (c *SimSwapUserClient) generateNewSession() (*types.Session, error) {
 		AccessToken: body.AccessToken,
 		ExpiresAt:   time.Now().Unix() + body.ExpiresIn,
 		// ExpiresAt:   time.Now().Add(time.Duration(body.ExpiresIn) * time.Second),
-		Scopes:      strings.Split(body.Scope, " "),
+		Scopes: strings.Split(body.Scope, " "),
 	}, nil
 }
 
@@ -290,6 +286,6 @@ func (c *SimSwapClient) For(identifier types.UserIdentifier) (*SimSwapUserClient
 	return client, nil
 }
 
-func (c *SimSwapClient) GetHello() (string) {
+func (c *SimSwapClient) GetHello() string {
 	return "Hello"
 }

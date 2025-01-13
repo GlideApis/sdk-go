@@ -10,14 +10,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ClearBlockchain/sdk-go/pkg/types"
-	"github.com/ClearBlockchain/sdk-go/pkg/utils"
+	"github.com/GlideApis/sdk-go/pkg/types"
+	"github.com/GlideApis/sdk-go/pkg/utils"
 	"github.com/google/uuid"
 )
 
 type NumberVerifyUserClient struct {
-    settings types.GlideSdkSettings
-	session  *types.Session
+	settings    types.GlideSdkSettings
+	session     *types.Session
 	code        string
 	phoneNumber *string
 }
@@ -43,27 +43,27 @@ func (c *NumberVerifyUserClient) StartSession() error {
 	data := url.Values{}
 	data.Set("grant_type", "authorization_code")
 	data.Set("code", c.code)
-    resp, err := utils.FetchX(c.settings.Internal.AuthBaseURL+"/oauth2/token", utils.FetchXInput{
-        Method: "POST",
-        Headers: map[string]string{
-            "Content-Type":  "application/x-www-form-urlencoded",
-            "Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte(c.settings.ClientID+":"+c.settings.ClientSecret)),
-        },
-        Body: data.Encode(),
-    })
+	resp, err := utils.FetchX(c.settings.Internal.AuthBaseURL+"/oauth2/token", utils.FetchXInput{
+		Method: "POST",
+		Headers: map[string]string{
+			"Content-Type":  "application/x-www-form-urlencoded",
+			"Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte(c.settings.ClientID+":"+c.settings.ClientSecret)),
+		},
+		Body: data.Encode(),
+	})
 	if err != nil {
 		return fmt.Errorf("failed to generate new session: %w", err)
 	}
 	var body struct {
 		AccessToken string `json:"access_token"`
-		ExpiresIn   int64    `json:"expires_in"`
+		ExpiresIn   int64  `json:"expires_in"`
 		Scope       string `json:"scope"`
 	}
 
 	if err := resp.JSON(&body); err != nil {
-	        fmt.Errorf("[GlideClient] Failed to parse response: %w", err)
-    		return nil
-    }
+		fmt.Errorf("[GlideClient] Failed to parse response: %w", err)
+		return nil
+	}
 
 	c.session = &types.Session{
 		AccessToken: body.AccessToken,
@@ -74,7 +74,7 @@ func (c *NumberVerifyUserClient) StartSession() error {
 }
 
 func (c *NumberVerifyUserClient) GetOperator() (string, error) {
-    return utils.GetOperator(c.session)
+	return utils.GetOperator(c.session)
 }
 
 func (c *NumberVerifyUserClient) VerifyNumber(number *string, conf types.ApiConfig) (*types.NumberVerifyResponse, error) {
@@ -82,8 +82,8 @@ func (c *NumberVerifyUserClient) VerifyNumber(number *string, conf types.ApiConf
 	if conf.SessionIdentifier != "" {
 		operator, err := utils.GetOperator(c.session)
 		if err != nil {
-		    fmt.Errorf("cannot report metric since failed to get operator: %w", err)
-        }
+			fmt.Errorf("cannot report metric since failed to get operator: %w", err)
+		}
 		c.reportNumberVerifyMetric(&wg, conf.SessionIdentifier, "Glide numberVerify start function", operator)
 	}
 	if c.session == nil {
@@ -109,13 +109,13 @@ func (c *NumberVerifyUserClient) VerifyNumber(number *string, conf types.ApiConf
 	}
 
 	resp, err := utils.FetchX(c.settings.Internal.APIBaseURL+"/number-verification/verify", utils.FetchXInput{
-    		Method: "POST",
-    		Headers: map[string]string{
-    			"Content-Type":  "application/json",
-    			"Authorization": "Bearer " + c.session.AccessToken,
-    		},
-    		Body: string(body),
-    })
+		Method: "POST",
+		Headers: map[string]string{
+			"Content-Type":  "application/json",
+			"Authorization": "Bearer " + c.session.AccessToken,
+		},
+		Body: string(body),
+	})
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to verify number: %w", err)
@@ -126,14 +126,14 @@ func (c *NumberVerifyUserClient) VerifyNumber(number *string, conf types.ApiConf
 		return nil, fmt.Errorf("[GlideClient] Failed to parse response: %w", err)
 	}
 	// Metric reporting for success/failure
-    if conf.SessionIdentifier != "" {
-        c.reportNumberVerifyMetric(&wg, conf.SessionIdentifier, "Glide success", "")
-        if result.DevicePhoneNumberVerified {
-            c.reportNumberVerifyMetric(&wg, conf.SessionIdentifier, "Glide verified", "")
-        } else {
-            c.reportNumberVerifyMetric(&wg, conf.SessionIdentifier, "Glide unverified", "")
-        }
-    }
+	if conf.SessionIdentifier != "" {
+		c.reportNumberVerifyMetric(&wg, conf.SessionIdentifier, "Glide success", "")
+		if result.DevicePhoneNumberVerified {
+			c.reportNumberVerifyMetric(&wg, conf.SessionIdentifier, "Glide verified", "")
+		} else {
+			c.reportNumberVerifyMetric(&wg, conf.SessionIdentifier, "Glide unverified", "")
+		}
+	}
 	wg.Wait()
 	return &result, nil
 }
@@ -154,11 +154,11 @@ func (c *NumberVerifyClient) GetAuthURL(opts ...types.NumberVerifyAuthUrlInput) 
 		return "", errors.New("[GlideClient] Client id is required to generate an auth url")
 	}
 	var state string
-    if len(opts) > 0 && opts[0].State != nil {
-        state = *opts[0].State
-    } else {
-        state = uuid.New().String()
-    }
+	if len(opts) > 0 && opts[0].State != nil {
+		state = *opts[0].State
+	} else {
+		state = uuid.New().String()
+	}
 	nonce := uuid.New().String()
 	params := url.Values{}
 	params.Set("client_id", c.settings.ClientID)
@@ -205,7 +205,6 @@ func (c *NumberVerifyUserClient) reportNumberVerifyMetric(wg *sync.WaitGroup, se
 	}(metric)
 }
 
-func (c *NumberVerifyClient) GetHello() (string) {
+func (c *NumberVerifyClient) GetHello() string {
 	return "Hello"
 }
-

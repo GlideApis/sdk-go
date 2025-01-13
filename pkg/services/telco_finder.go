@@ -4,11 +4,11 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/GlideApis/sdk-go/pkg/types"
+	"github.com/GlideApis/sdk-go/pkg/utils"
 	"net/url"
 	"strings"
 	"time"
-	"github.com/ClearBlockchain/sdk-go/pkg/types"
-	"github.com/ClearBlockchain/sdk-go/pkg/utils"
 )
 
 type TelcoFinderClient struct {
@@ -28,22 +28,22 @@ func (c *TelcoFinderClient) NetworkIdForNumber(phoneNumber string, conf types.Ap
 		return nil, fmt.Errorf("[GlideClient] internal.apiBaseUrl is unset")
 	}
 
-    session, err := c.getSession(conf.Session)
-    if err != nil {
-        return nil, fmt.Errorf("[GlideClient] Failed to get session: %w", err)
-    }
-    fmt.Printf("Debug: Using session with AccessToken: %s...\n", session.AccessToken)
+	session, err := c.getSession(conf.Session)
+	if err != nil {
+		return nil, fmt.Errorf("[GlideClient] Failed to get session: %w", err)
+	}
+	fmt.Printf("Debug: Using session with AccessToken: %s...\n", session.AccessToken)
 
 	body, err := json.Marshal(map[string]string{
 		"phoneNumber": utils.FormatPhoneNumber(phoneNumber),
 	})
-	 if err != nil {
-            return nil, fmt.Errorf("[GlideClient] Failed to marshal request body: %w", err)
-     }
+	if err != nil {
+		return nil, fmt.Errorf("[GlideClient] Failed to marshal request body: %w", err)
+	}
 
-    fmt.Printf("Debug: Fetching network ID for number: %s...\n", phoneNumber)
-    fmt.Printf("Debug: Request body: %s\n", body)
-    fmt.Printf("Debug: APIBaseURL: %s\n", c.settings.Internal.APIBaseURL+"/telco-finder/v1/resolve-network-id")
+	fmt.Printf("Debug: Fetching network ID for number: %s...\n", phoneNumber)
+	fmt.Printf("Debug: Request body: %s\n", body)
+	fmt.Printf("Debug: APIBaseURL: %s\n", c.settings.Internal.APIBaseURL+"/telco-finder/v1/resolve-network-id")
 	resp, err := utils.FetchX(c.settings.Internal.APIBaseURL+"/telco-finder/v1/resolve-network-id", utils.FetchXInput{
 		Method: "POST",
 		Headers: map[string]string{
@@ -53,13 +53,13 @@ func (c *TelcoFinderClient) NetworkIdForNumber(phoneNumber string, conf types.Ap
 		Body: string(body),
 	})
 	if err != nil {
-            return nil, fmt.Errorf("[GlideClient] FetchX failed for getting Network ID not found for number: %w", err)
-    }
+		return nil, fmt.Errorf("[GlideClient] FetchX failed for getting Network ID not found for number: %w", err)
+	}
 
 	var result types.TelcoFinderNetworkIdResponse
 	if err := resp.JSON(&result); err != nil {
-            return nil, fmt.Errorf("[GlideClient] Failed to parse response: %w", err)
-    }
+		return nil, fmt.Errorf("[GlideClient] Failed to parse response: %w", err)
+	}
 
 	return &result, nil
 }
@@ -117,24 +117,24 @@ func (c *TelcoFinderClient) lookup(subject string, conf types.ApiConfig) (*types
 }
 
 func (c *TelcoFinderClient) getSession(confSession *types.Session) (*types.Session, error) {
-    if confSession != nil {
-        fmt.Println("Debug: Using provided session")
-        return confSession, nil
-    }
+	if confSession != nil {
+		fmt.Println("Debug: Using provided session")
+		return confSession, nil
+	}
 
-    if c.session != nil && c.session.ExpiresAt > time.Now().Add(time.Minute).Unix() && contains(c.session.Scopes, "telco-finder") {
-        fmt.Println("Debug: Using cached session")
-        return c.session, nil
-    }
+	if c.session != nil && c.session.ExpiresAt > time.Now().Add(time.Minute).Unix() && contains(c.session.Scopes, "telco-finder") {
+		fmt.Println("Debug: Using cached session")
+		return c.session, nil
+	}
 
-    fmt.Println("Debug: Generating new session")
-    session, err := c.generateNewSession()
-    if err != nil {
-        return nil, fmt.Errorf("failed to generate new session: %w", err)
-    }
+	fmt.Println("Debug: Generating new session")
+	session, err := c.generateNewSession()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate new session: %w", err)
+	}
 
-    c.session = session
-    return session, nil
+	c.session = session
+	return session, nil
 }
 
 func (c *TelcoFinderClient) generateNewSession() (*types.Session, error) {
@@ -197,6 +197,6 @@ func contains(slice []string, item string) bool {
 	return false
 }
 
-func (c *TelcoFinderClient) GetHello() (string) {
+func (c *TelcoFinderClient) GetHello() string {
 	return "Hello"
 }
