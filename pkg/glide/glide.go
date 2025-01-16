@@ -12,7 +12,7 @@ import (
 
 // GlideClient is the main client for the SDK
 type GlideClient struct {
-	settings     types.GlideSdkSettings
+	Settings     types.GlideSdkSettings
 	TelcoFinder  *services.TelcoFinderClient
 	MagicAuth    *services.MagicAuthClient
 	SimSwap      *services.SimSwapClient
@@ -46,6 +46,7 @@ func ReportMetric(report types.MetricInfo) error {
 }
 
 func NewGlideClient(settings types.GlideSdkSettings) (*GlideClient, error) {
+
 	defaults := types.GlideSdkSettings{
 		ClientID:     os.Getenv("GLIDE_CLIENT_ID"),
 		ClientSecret: os.Getenv("GLIDE_CLIENT_SECRET"),
@@ -53,6 +54,7 @@ func NewGlideClient(settings types.GlideSdkSettings) (*GlideClient, error) {
 		Internal: types.InternalSettings{
 			AuthBaseURL: getEnvOrDefault("GLIDE_AUTH_BASE_URL", "https://oidc.gateway-x.io"),
 			APIBaseURL:  getEnvOrDefault("GLIDE_API_BASE_URL", "https://api.gateway-x.io"),
+			LogLevel:    types.ERROR,
 		},
 	}
 
@@ -67,8 +69,11 @@ func NewGlideClient(settings types.GlideSdkSettings) (*GlideClient, error) {
 		return nil, errors.New("internal.authBaseUrl is unset")
 	}
 
+	// Initialize logger with the merged log level
+	utils.SetLogLevel(utils.LogLevel(mergedSettings.Internal.LogLevel))
+
 	client := &GlideClient{
-		settings:     mergedSettings,
+		Settings:     mergedSettings,
 		TelcoFinder:  services.NewTelcoFinderClient(mergedSettings),
 		MagicAuth:    services.NewMagicAuthClient(mergedSettings),
 		SimSwap:      services.NewSimSwapClient(mergedSettings),
@@ -103,6 +108,8 @@ func mergeSettings(defaults, override types.GlideSdkSettings) types.GlideSdkSett
 	if override.Internal.APIBaseURL != "" {
 		result.Internal.APIBaseURL = override.Internal.APIBaseURL
 	}
-
+	if override.Internal.LogLevel > types.UNSET {
+		result.Internal.LogLevel = override.Internal.LogLevel
+	}
 	return result
 }

@@ -4,11 +4,12 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/GlideApis/sdk-go/pkg/types"
-	"github.com/GlideApis/sdk-go/pkg/utils"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/GlideApis/sdk-go/pkg/types"
+	"github.com/GlideApis/sdk-go/pkg/utils"
 )
 
 type TelcoFinderClient struct {
@@ -25,14 +26,16 @@ func NewTelcoFinderClient(settings types.GlideSdkSettings) *TelcoFinderClient {
 // NetworkIdForNumber resolves the network ID for a given phone number
 func (c *TelcoFinderClient) NetworkIdForNumber(phoneNumber string, conf types.ApiConfig) (*types.TelcoFinderNetworkIdResponse, error) {
 	if c.settings.Internal.APIBaseURL == "" {
+		utils.Logger.Error("internal.apiBaseUrl is unset")
 		return nil, fmt.Errorf("[GlideClient] internal.apiBaseUrl is unset")
 	}
 
 	session, err := c.getSession(conf.Session)
 	if err != nil {
+		utils.Logger.Error("Failed to get session: %v", err)
 		return nil, fmt.Errorf("[GlideClient] Failed to get session: %w", err)
 	}
-	fmt.Printf("Debug: Using session with AccessToken: %s...\n", session.AccessToken)
+	utils.Logger.Debug("Using session with AccessToken: %s...", session.AccessToken)
 
 	body, err := json.Marshal(map[string]string{
 		"phoneNumber": utils.FormatPhoneNumber(phoneNumber),
@@ -41,9 +44,9 @@ func (c *TelcoFinderClient) NetworkIdForNumber(phoneNumber string, conf types.Ap
 		return nil, fmt.Errorf("[GlideClient] Failed to marshal request body: %w", err)
 	}
 
-	fmt.Printf("Debug: Fetching network ID for number: %s...\n", phoneNumber)
-	fmt.Printf("Debug: Request body: %s\n", body)
-	fmt.Printf("Debug: APIBaseURL: %s\n", c.settings.Internal.APIBaseURL+"/telco-finder/v1/resolve-network-id")
+	utils.Logger.Debug("Fetching network ID for number: %s...", phoneNumber)
+	utils.Logger.Debug("Request body: %s", body)
+	utils.Logger.Debug("APIBaseURL: %s", c.settings.Internal.APIBaseURL+"/telco-finder/v1/resolve-network-id")
 	resp, err := utils.FetchX(c.settings.Internal.APIBaseURL+"/telco-finder/v1/resolve-network-id", utils.FetchXInput{
 		Method: "POST",
 		Headers: map[string]string{
@@ -118,16 +121,16 @@ func (c *TelcoFinderClient) lookup(subject string, conf types.ApiConfig) (*types
 
 func (c *TelcoFinderClient) getSession(confSession *types.Session) (*types.Session, error) {
 	if confSession != nil {
-		fmt.Println("Debug: Using provided session")
+		utils.Logger.Debug("Using provided session")
 		return confSession, nil
 	}
 
 	if c.session != nil && c.session.ExpiresAt > time.Now().Add(time.Minute).Unix() && contains(c.session.Scopes, "telco-finder") {
-		fmt.Println("Debug: Using cached session")
+		utils.Logger.Debug("Using cached session")
 		return c.session, nil
 	}
 
-	fmt.Println("Debug: Generating new session")
+	utils.Logger.Debug("Generating new session")
 	session, err := c.generateNewSession()
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate new session: %w", err)
@@ -139,6 +142,7 @@ func (c *TelcoFinderClient) getSession(confSession *types.Session) (*types.Sessi
 
 func (c *TelcoFinderClient) generateNewSession() (*types.Session, error) {
 	if c.settings.ClientID == "" || c.settings.ClientSecret == "" {
+		utils.Logger.Error("Client credentials are required to generate a new session")
 		return nil, fmt.Errorf("[GlideClient] Client credentials are required to generate a new session")
 	}
 

@@ -4,11 +4,12 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/GlideApis/sdk-go/pkg/types"
-	"github.com/GlideApis/sdk-go/pkg/utils"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/GlideApis/sdk-go/pkg/types"
+	"github.com/GlideApis/sdk-go/pkg/utils"
 )
 
 type SimSwapCheckResponse struct {
@@ -42,6 +43,7 @@ func (c *SimSwapUserClient) GetConsentURL() string {
 // Check performs a SIM swap check
 func (c *SimSwapUserClient) Check(params types.SimSwapCheckParams, conf types.ApiConfig) (*SimSwapCheckResponse, error) {
 	if c.settings.Internal.APIBaseURL == "" {
+		utils.Logger.Error("internal.apiBaseUrl is unset")
 		return nil, fmt.Errorf("[GlideClient] internal.apiBaseUrl is unset")
 	}
 	phoneNumber := params.PhoneNumber
@@ -78,6 +80,7 @@ func (c *SimSwapUserClient) Check(params types.SimSwapCheckParams, conf types.Ap
 		if fetchErr, ok := err.(*utils.FetchError); ok && fetchErr.Response.StatusCode == 404 {
 			return nil, fmt.Errorf("[GlideClient] Network ID not found for number %s", phoneNumber)
 		}
+		utils.Logger.Error("FetchX failed: %v", err)
 		return nil, fmt.Errorf("[GlideClient] FetchX failed: %w", err)
 	}
 	var result SimSwapCheckResponse
@@ -185,16 +188,16 @@ func (c *SimSwapUserClient) StartSession() error {
 
 func (c *SimSwapUserClient) getSession(confSession *types.Session) (*types.Session, error) {
 	if confSession != nil {
-		fmt.Println("Debug: Using provided session")
+		utils.Logger.Debug("Using provided session")
 		return confSession, nil
 	}
 
 	if c.session != nil && c.session.ExpiresAt > time.Now().Add(time.Minute).Unix() && contains(c.session.Scopes, "sim-swap") {
-		fmt.Println("Debug: Using cached session")
+		utils.Logger.Debug("Using cached session")
 		return c.session, nil
 	}
 
-	fmt.Println("Debug: Generating new session")
+	utils.Logger.Debug("Generating new session")
 	session, err := c.generateNewSession()
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate new session: %w", err)
