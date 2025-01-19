@@ -141,7 +141,7 @@ func ReportMetric(report types.MetricInfo) {
 	}
 	url := os.Getenv("REPORT_METRIC_URL")
 	if url == "" {
-		fmt.Println("missing process env REPORT_METRIC_URL")
+		Logger.Debug("missing process env REPORT_METRIC_URL")
 		return
 	}
 	const maxRetries = 3
@@ -154,17 +154,17 @@ func ReportMetric(report types.MetricInfo) {
 		if err == nil {
 			return // Successfully sent the metric
 		}
-		fmt.Printf("Error reporting to metric server (attempt %d): %v\n", attempt+1, err)
+		Logger.Warn("Error reporting to metric server (attempt %d): %v\n", attempt+1, err)
 		attempt++
 		if attempt < maxRetries {
 			time.Sleep(retryDelay(attempt))
 		}
 	}
-	fmt.Println("Failed to report metric after multiple attempts")
+	Logger.Error("Failed to report metric after multiple attempts")
 }
 
 func sendMetric(url string, data map[string]interface{}) error {
-	fmt.Println("Sending metric to: ", url)
+	Logger.Debug("Sending metric to: %s", url)
 	payload, err := json.Marshal(data)
 	if err != nil {
 		return fmt.Errorf("failed to marshal report data: %w", err)
@@ -180,7 +180,6 @@ func sendMetric(url string, data map[string]interface{}) error {
 	if err != nil {
 		return fmt.Errorf("request failed: %w", err)
 	}
-	fmt.Println("Response status: ", resp.Status)
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {

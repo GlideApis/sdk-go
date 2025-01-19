@@ -32,12 +32,15 @@ func NewNumberVerifyUserClient(settings types.GlideSdkSettings, params types.Num
 
 func (c *NumberVerifyUserClient) StartSession() error {
 	if c.settings.Internal.AuthBaseURL == "" {
+		utils.Logger.Error("internal.authBaseUrl is unset")
 		return errors.New("[GlideClient] internal.authBaseUrl is unset")
 	}
 	if c.settings.ClientID == "" || c.settings.ClientSecret == "" {
+		utils.Logger.Error("Client credentials are required to generate a new session")
 		return errors.New("[GlideClient] Client credentials are required to generate a new session")
 	}
 	if c.code == "" {
+		utils.Logger.Error("Code is required to start a session")
 		return errors.New("[GlideClient] Code is required to start a session")
 	}
 	data := url.Values{}
@@ -52,6 +55,7 @@ func (c *NumberVerifyUserClient) StartSession() error {
 		Body: data.Encode(),
 	})
 	if err != nil {
+		utils.Logger.Error("Failed to generate new session: %v", err)
 		return fmt.Errorf("failed to generate new session: %w", err)
 	}
 	var body struct {
@@ -61,6 +65,7 @@ func (c *NumberVerifyUserClient) StartSession() error {
 	}
 
 	if err := resp.JSON(&body); err != nil {
+		utils.Logger.Error("Failed to parse response: %v", err)
 		fmt.Errorf("[GlideClient] Failed to parse response: %w", err)
 		return nil
 	}
@@ -82,15 +87,18 @@ func (c *NumberVerifyUserClient) VerifyNumber(number *string, conf types.ApiConf
 	if conf.SessionIdentifier != "" {
 		operator, err := utils.GetOperator(c.session)
 		if err != nil {
+			utils.Logger.Error("Cannot report metric since failed to get operator: %v", err)
 			fmt.Errorf("cannot report metric since failed to get operator: %w", err)
 		}
 		c.reportNumberVerifyMetric(&wg, conf.SessionIdentifier, "Glide numberVerify start function", operator)
 	}
 	if c.session == nil {
+		utils.Logger.Error("Session is required to verify a number")
 		return nil, errors.New("[GlideClient] Session is required to verify a number")
 	}
 
 	if c.settings.Internal.APIBaseURL == "" {
+		utils.Logger.Error("internal.apiBaseUrl is unset")
 		return nil, errors.New("[GlideClient] internal.apiBaseUrl is unset")
 	}
 
@@ -105,6 +113,7 @@ func (c *NumberVerifyUserClient) VerifyNumber(number *string, conf types.ApiConf
 
 	body, err := json.Marshal(map[string]string{"phoneNumber": utils.FormatPhoneNumber(phoneNumber)})
 	if err != nil {
+		utils.Logger.Error("Failed to marshal payload in number verify: %v", err)
 		return nil, fmt.Errorf("[GlideClient] failed to marshal payload in number verify: %w", err)
 	}
 
@@ -118,11 +127,13 @@ func (c *NumberVerifyUserClient) VerifyNumber(number *string, conf types.ApiConf
 	})
 
 	if err != nil {
+		utils.Logger.Error("Failed to verify number: %v", err)
 		return nil, fmt.Errorf("failed to verify number: %w", err)
 	}
 
 	var result types.NumberVerifyResponse
 	if err := resp.JSON(&result); err != nil {
+		utils.Logger.Error("Failed to parse response: %v", err)
 		return nil, fmt.Errorf("[GlideClient] Failed to parse response: %w", err)
 	}
 	// Metric reporting for success/failure
@@ -148,9 +159,11 @@ func NewNumberVerifyClient(settings types.GlideSdkSettings) *NumberVerifyClient 
 
 func (c *NumberVerifyClient) GetAuthURL(opts ...types.NumberVerifyAuthUrlInput) (string, error) {
 	if c.settings.Internal.AuthBaseURL == "" {
+		utils.Logger.Error("internal.authBaseUrl is unset")
 		return "", errors.New("[GlideClient] internal.authBaseUrl is unset")
 	}
 	if c.settings.ClientID == "" {
+		utils.Logger.Error("Client id is required to generate an auth url")
 		return "", errors.New("[GlideClient] Client id is required to generate an auth url")
 	}
 	var state string
@@ -190,6 +203,7 @@ func (c *NumberVerifyClient) For(params types.NumberVerifyClientForParams) (*Num
 }
 
 func (c *NumberVerifyUserClient) reportNumberVerifyMetric(wg *sync.WaitGroup, sessionId, metricName string, operator string) {
+	utils.Logger.Debug("reportNumberVerifyMetric: %s", metricName)
 	metric := types.MetricInfo{
 		Operator:   operator,
 		Timestamp:  time.Now(),

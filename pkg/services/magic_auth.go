@@ -4,12 +4,13 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/GlideApis/sdk-go/pkg/types"
-	"github.com/GlideApis/sdk-go/pkg/utils"
 	"net/url"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/GlideApis/sdk-go/pkg/types"
+	"github.com/GlideApis/sdk-go/pkg/utils"
 )
 
 type MagicAuthStartResponse struct {
@@ -37,6 +38,7 @@ func NewMagicAuthClient(settings types.GlideSdkSettings) *MagicAuthClient {
 func (c *MagicAuthClient) StartAuth(props types.MagicAuthStartProps, conf types.ApiConfig) (*MagicAuthStartResponse, error) {
 	var wg sync.WaitGroup
 	if c.settings.Internal.APIBaseURL == "" {
+		utils.Logger.Error("internal.apiBaseUrl is unset")
 		return nil, fmt.Errorf("[GlideClient] internal.apiBaseUrl is unset")
 	}
 	if conf.SessionIdentifier != "" {
@@ -78,6 +80,7 @@ func (c *MagicAuthClient) StartAuth(props types.MagicAuthStartProps, conf types.
 	})
 
 	if err != nil {
+		utils.Logger.Error("FetchX failed for startAuth: %v", err)
 		return nil, fmt.Errorf("[GlideClient]: [magic-auth] FetchX failed for startAuth : %w", err)
 	}
 
@@ -161,7 +164,7 @@ func (c *MagicAuthClient) getSession(confSession *types.Session) (*types.Session
 	}
 
 	if c.session != nil && c.session.ExpiresAt > time.Now().Add(time.Minute).Unix() && contains(c.session.Scopes, "magic-auth") {
-		fmt.Println("Debug: Using cached session")
+		utils.Logger.Debug("Using cached session")
 		return c.session, nil
 	}
 
@@ -213,7 +216,7 @@ func (c *MagicAuthClient) generateNewSession() (*types.Session, error) {
 }
 
 func (c *MagicAuthClient) reportMagicAuthMetric(wg *sync.WaitGroup, sessionId, metricName string, operator string) {
-	fmt.Println("in reportMagicAuthMetric", metricName)
+	utils.Logger.Debug("reportMagicAuthMetric: %s", metricName)
 	metric := types.MetricInfo{
 		Operator:   operator,
 		Timestamp:  time.Now(),
