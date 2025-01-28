@@ -17,6 +17,7 @@ type GlideClient struct {
 	MagicAuth    *services.MagicAuthClient
 	SimSwap      *services.SimSwapClient
 	NumberVerify *services.NumberVerifyClient
+	KYCMatch     *services.KYCMatchClient
 }
 
 func ReportMetric(report types.MetricInfo) error {
@@ -78,6 +79,7 @@ func NewGlideClient(settings types.GlideSdkSettings) (*GlideClient, error) {
 		MagicAuth:    services.NewMagicAuthClient(mergedSettings),
 		SimSwap:      services.NewSimSwapClient(mergedSettings),
 		NumberVerify: services.NewNumberVerifyClient(mergedSettings),
+		KYCMatch:     services.NewKYCMatchClient(mergedSettings),
 	}
 
 	return client, nil

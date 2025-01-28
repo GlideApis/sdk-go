@@ -151,3 +151,49 @@ const (
 	WARN                  // 3
 	ERROR                 // 4 - Least verbose
 )
+
+// KYC Match types
+type KYCMatchProps struct {
+	PhoneNumber          string `json:"phoneNumber"`
+	IDDocument           string `json:"idDocument"`
+	Name                 string `json:"name"`
+	GivenName            string `json:"givenName"`
+	FamilyName           string `json:"familyName"`
+	NameKanaHankaku      string `json:"nameKanaHankaku"`
+	NameKanaZenkaku      string `json:"nameKanaZenkaku"`
+	MiddleNames          string `json:"middleNames"`
+	FamilyNameAtBirth    string `json:"familyNameAtBirth"`
+	Address              string `json:"address"`
+	StreetName           string `json:"streetName"`
+	StreetNumber         int    `json:"streetNumber"`
+	PostalCode           int    `json:"postalCode"`
+	Region               string `json:"region"`
+	Locality             string `json:"locality"`
+	Country              string `json:"country"`
+	HouseNumberExtension string `json:"houseNumberExtension"`
+	Birthdate            string `json:"birthdate"`
+	Email                string `json:"email"`
+	Gender               string `json:"gender"`
+}
+
+type KYCMatchResponse struct {
+	IDDocumentMatch           *string `json:"idDocumentMatch"`
+	NameMatch                 *string `json:"nameMatch"`
+	GivenNameMatch            *string `json:"givenNameMatch"`
+	FamilyNameMatch           *string `json:"familyNameMatch"`
+	NameKanaHankakuMatch      *string `json:"nameKanaHankakuMatch"`
+	NameKanaZenkakuMatch      *string `json:"nameKanaZenkakuMatch"`
+	MiddleNamesMatch          *string `json:"middleNamesMatch"`
+	FamilyNameAtBirthMatch    *string `json:"familyNameAtBirthMatch"`
+	AddressMatch              *string `json:"addressMatch"`
+	StreetNameMatch           *string `json:"streetNameMatch"`
+	StreetNumberMatch         *string `json:"streetNumberMatch"`
+	PostalCodeMatch           *string `json:"postalCodeMatch"`
+	RegionMatch               *string `json:"regionMatch"`
+	LocalityMatch             *string `json:"localityMatch"`
+	CountryMatch              *string `json:"countryMatch"`
+	HouseNumberExtensionMatch *string `json:"houseNumberExtensionMatch"`
+	BirthdateMatch            *string `json:"birthdateMatch"`
+	EmailMatch                *string `json:"emailMatch"`
+	GenderMatch               *string `json:"genderMatch"`
+}
