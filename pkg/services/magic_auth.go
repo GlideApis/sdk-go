@@ -235,3 +235,115 @@ func (c *MagicAuthClient) reportMagicAuthMetric(wg *sync.WaitGroup, sessionId, m
 func (c *MagicAuthClient) GetHello() string {
 	return "Hello"
 }
+
+func (c *MagicAuthClient) StartServerAuth(props types.MagicAuthStartProps, conf types.ApiConfig) (*types.MagicAuthStartServerAuthResponse, error) {
+	var wg sync.WaitGroup
+	if c.settings.Internal.APIBaseURL == "" {
+		utils.Logger.Error("internal.apiBaseUrl is unset")
+		return nil, fmt.Errorf("[GlideClient] internal.apiBaseUrl is unset")
+	}
+	if conf.SessionIdentifier != "" {
+		c.reportMagicAuthMetric(&wg, conf.SessionIdentifier, "Glide start server auth", "")
+	}
+
+	session, err := c.getSession(conf.Session)
+	if err != nil {
+		return nil, err
+	}
+
+	data := map[string]string{}
+	if props.PhoneNumber != "" {
+		data["phoneNumber"] = props.PhoneNumber
+	} else {
+		data["email"] = props.Email
+	}
+	if props.RedirectURL != "" {
+		data["redirectUrl"] = props.RedirectURL
+	}
+	if props.State != "" {
+		data["state"] = props.State
+	}
+	if props.FallbackChannel != "" {
+		data["fallbackChannel"] = string(props.FallbackChannel)
+	}
+	if props.DeviceIPAddress != "" {
+		data["deviceIpAddress"] = props.DeviceIPAddress
+	}
+	if props.OTPConfirmationURL != "" {
+		data["otpConfirmationUrl"] = props.OTPConfirmationURL
+	}
+	if props.RCSConfirmationURL != "" {
+		data["rcsConfirmationUrl"] = props.RCSConfirmationURL
+	}
+
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := utils.FetchX(c.settings.Internal.APIBaseURL+"/magic-auth/verification/start-server-auth", utils.FetchXInput{
+		Method: "POST",
+		Headers: map[string]string{
+			"Content-Type":  "application/json",
+			"Authorization": "Bearer " + session.AccessToken,
+		},
+		Body: string(jsonData),
+	})
+
+	if err != nil {
+		utils.Logger.Error("FetchX failed for startServerAuth: %v", err)
+		return nil, fmt.Errorf("[GlideClient]: [magic-auth] FetchX failed for startServerAuth : %w", err)
+	}
+
+	var result types.MagicAuthStartServerAuthResponse
+	if err := resp.JSON(&result); err != nil {
+		return nil, fmt.Errorf("[GlideClient] Failed to parse response: %w", err)
+	}
+
+	if conf.SessionIdentifier != "" {
+		c.reportMagicAuthMetric(&wg, conf.SessionIdentifier, "Glide serverAuthStartRes", "")
+	}
+	wg.Wait()
+	return &result, nil
+}
+
+func (c *MagicAuthClient) CheckServerAuth(sessionID string, conf types.ApiConfig) (*types.MagicAuthCheckServerAuthResponse, error) {
+	var wg sync.WaitGroup
+	if c.settings.Internal.APIBaseURL == "" {
+		return nil, fmt.Errorf("[GlideClient] internal.apiBaseUrl is unset")
+	}
+
+	session, err := c.getSession(conf.Session)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := utils.FetchX(fmt.Sprintf("%s/magic-auth/verification/check-server-auth?sessionId=%s",
+		c.settings.Internal.APIBaseURL, sessionID), utils.FetchXInput{
+		Method: "GET",
+		Headers: map[string]string{
+			"Content-Type":  "application/json",
+			"Authorization": "Bearer " + session.AccessToken,
+		},
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("[GlideClient]: [magic-auth] FetchX failed for CheckServerAuth : %w", err)
+	}
+
+	var result types.MagicAuthCheckServerAuthResponse
+	if err := resp.JSON(&result); err != nil {
+		return nil, fmt.Errorf("[GlideClient] Failed to parse response in CheckServerAuth: %w", err)
+	}
+
+	if conf.SessionIdentifier != "" {
+		c.reportMagicAuthMetric(&wg, conf.SessionIdentifier, "Glide serverAuthCheck", "")
+		if result.Verified {
+			c.reportMagicAuthMetric(&wg, conf.SessionIdentifier, "Glide serverAuthVerified", "")
+		} else {
+			c.reportMagicAuthMetric(&wg, conf.SessionIdentifier, "Glide serverAuthUnverified", "")
+		}
+	}
+	wg.Wait()
+	return &result, nil
+}

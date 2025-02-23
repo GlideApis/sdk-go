@@ -71,11 +71,14 @@ type UserIdentifier interface {
 //magic auth
 
 type MagicAuthStartProps struct {
-	Email           string     `json:"email,omitempty"`
-	PhoneNumber     string     `json:"phoneNumber,omitempty"`
-	State           string     `json:"state,omitempty"`
-	RedirectURL     string     `json:"redirectURL,omitempty"`
-	FallbackChannel NoFallback `json:"fallbackChannel,omitempty"`
+	Email              string     `json:"email,omitempty"`
+	PhoneNumber        string     `json:"phoneNumber,omitempty"`
+	State              string     `json:"state,omitempty"`
+	RedirectURL        string     `json:"redirectUrl,omitempty"`
+	FallbackChannel    NoFallback `json:"fallbackChannel,omitempty"`
+	DeviceIPAddress    string     `json:"deviceIpAddress,omitempty"`
+	OTPConfirmationURL string     `json:"otpConfirmationUrl,omitempty"`
+	RCSConfirmationURL string     `json:"rcsConfirmationUrl,omitempty"`
 }
 
 type NoFallback string
@@ -88,10 +91,21 @@ const (
 )
 
 type MagicAuthVerifyProps struct {
-	Email       string `json:"email,omitempty"`
-	PhoneNumber string `json:"phoneNumber,omitempty"`
-	Code        string `json:"code,omitempty"`
-	Token       string `json:"token,omitempty"`
+	Email           string `json:"email,omitempty"`
+	PhoneNumber     string `json:"phoneNumber,omitempty"`
+	Code            string `json:"code,omitempty"`
+	Token           string `json:"token,omitempty"`
+	DeviceIPAddress string `json:"deviceIpAddress,omitempty"`
+}
+
+type MagicAuthStartServerAuthResponse struct {
+	SessionID string `json:"sessionId"`
+	AuthURL   string `json:"authUrl"`
+}
+
+type MagicAuthCheckServerAuthResponse struct {
+	Status   string `json:"status"` // "PENDING" or "COMPLETED"
+	Verified bool   `json:"verified"`
 }
 
 // number verify
