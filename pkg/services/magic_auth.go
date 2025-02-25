@@ -65,6 +65,9 @@ func (c *MagicAuthClient) StartAuth(props types.MagicAuthStartProps, conf types.
 	if props.FallbackChannel != "" {
 		data["fallbackChannel"] = string(props.FallbackChannel)
 	}
+	if props.DeviceIPAddress != "" {
+		data["deviceIpAddress"] = props.DeviceIPAddress
+	}
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
@@ -121,6 +124,9 @@ func (c *MagicAuthClient) VerifyAuth(props types.MagicAuthVerifyProps, conf type
 		data["code"] = props.Code
 	} else {
 		data["token"] = props.Token
+	}
+	if props.DeviceIPAddress != "" {
+		data["deviceIpAddress"] = props.DeviceIPAddress
 	}
 
 	jsonData, err := json.Marshal(data)
